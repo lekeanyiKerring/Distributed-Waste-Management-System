@@ -1,0 +1,37 @@
+name: Backup recovery documentation
+
+on:
+  push:
+    branches: [docs/chore/dr-runbook]
+  pull_request:
+    paths:
+      - docs/runbooks/backup-dr.md
+      - docs/architecture/adr/0008-backup-dr.md
+      - .github/workflows/backup-dr-docs.yml
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check Markdown structure and relative links
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          for path in [Path('docs/runbooks/backup-dr.md'), Path('docs/architecture/adr/0008-backup-dr.md')]:
+              text = path.read_text(encoding='utf-8')
+              assert text.startswith('# '), f'{path}: missing title'
+              assert sum(line.startswith('```') for line in text.splitlines()) % 2 == 0, f'{path}: unclosed code fence'
+              for link in re.findall(r'\]\(([^)]+)\)', text):
+                  if not link.startswith(('https://', '#')):
+                      assert (path.parent / link).is_file(), f'{path}: missing {link}'
+              print(f'PASS: {path}')
+          PY
