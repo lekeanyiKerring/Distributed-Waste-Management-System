@@ -1,0 +1,92 @@
+name: Backup recovery documentation
+
+on:
+  push:
+    branches: [docs/chore/dr-runbook]
+  pull_request:
+    paths:
+      - docs/runbooks/backup-dr.md
+      - docs/runbooks/backup-drill-record.md
+      - docs/architecture/adr/0008-backup-dr.md
+      - docs/guides/backup-dr-tutorial.md
+      - docs/api/backup-cli.md
+      - docs/assessment/feature8-requirements.md
+      - .github/workflows/backup-dr-docs.yml
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check Markdown structure and relative links
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          for path in [Path('docs/runbooks/backup-dr.md'), Path('docs/runbooks/backup-drill-record.md'), Path('docs/architecture/adr/0008-backup-dr.md'), Path('docs/guides/backup-dr-tutorial.md'), Path('docs/api/backup-cli.md'), Path('docs/assessment/feature8-requirements.md')]:
+              text = path.read_text(encoding='utf-8')
+              assert text.startswith('# '), f'{path}: missing title'
+              assert sum(line.startswith('```') for line in text.splitlines()) % 2 == 0, f'{path}: unclosed code fence'
+              for link in re.findall(r'\]\(([^)]+)\)', text):
+                  if not link.startswith(('https://', '#')):
+                      assert (path.parent / link).is_file(), f'{path}: missing {link}'
+              print(f'PASS: {path}')
+          PY
+
+  tutorial:
+    name: Run the documented recovery tutorial
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check out the tested implementation
+        uses: actions/checkout@v4
+        with:
+          repository: lekeanyiKerring/Distributed-Waste-Management-System
+          ref: 75a8223ea9eb50ec0d0a55104d9e3a24b9e3e435
+          path: .tutorial-implementation
+          persist-credentials: false
+      - name: Extract and run the tutorial commands
+        env:
+          DWMS_BACKUP_TOOL: ${{ github.workspace }}/.tutorial-implementation/infrastructure/backup/backup.py
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('docs/guides/backup-dr-tutorial.md').read_text(encoding='utf-8')
+          blocks = []
+          current = None
+          for line in text.splitlines():
+              if line == '```bash':
+                  current = []
+              elif line == '```' and current is not None:
+                  blocks.append('\n'.join(current))
+                  current = None
+              elif current is not None:
+                  current.append(line)
+          assert len(blocks) == 6, f'Expected six executable tutorial blocks, got {len(blocks)}'
+          Path('/tmp/backup-tutorial.sh').write_text('\n\n'.join(blocks) + '\n', encoding='utf-8')
+          PY
+          bash -n /tmp/backup-tutorial.sh
+          bash /tmp/backup-tutorial.sh 2>&1 | tee tutorial-output.txt
+      - name: Keep tutorial output for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-tutorial-output
+          path: tutorial-output.txt
+          if-no-files-found: warn
+          retention-days: 14
