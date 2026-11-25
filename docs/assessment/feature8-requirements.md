@@ -1,8 +1,8 @@
 # Feature 8 requirement review
 
 Standard: [DWMS Sub-Module Catalogue](../../SUB_MODULES.md), Feature 8 — Backup & DR.
-This is a requirement review, not the lecturer's numeric marking sheet. The
-catalogue provides no point weights or formula for an 8/10 score.
+This review maps the assignment requirements to evidence. The catalogue does not
+provide numeric grading weights.
 
 ## Assignment
 
