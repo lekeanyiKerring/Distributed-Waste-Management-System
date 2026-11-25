@@ -9,13 +9,16 @@
 | Dependency | Feature 1 Compose orchestration and Feature 8 IMP |
 | Decision | [ADR-0008](../architecture/adr/0008-backup-dr.md) |
 
-## Purpose and recovery boundary
+For a first run, follow the [sample recovery tutorial](../guides/backup-dr-tutorial.md).
+Use the [CLI reference](../api/backup-cli.md) for arguments and exit codes, and
+copy the [drill record](backup-drill-record.md) when collecting recovery evidence.
+
+## What the backup covers
 
 Recover the DWMS PostgreSQL database, including the `locations` and `requests`
 schemas, spatial columns, indexes, sequences and PostGIS extension definitions.
-One full-database custom archive preserves a common database snapshot across
-these schemas. This procedure does not authorize services to query each other's
-schemas during normal operation.
+Both schemas are captured in the same database snapshot. Their normal service
+access rules remain in place.
 
 Cluster roles, tablespaces, authentication configuration, application secrets,
 container images, external photographs, Redis and MQTT state are outside the
@@ -24,12 +27,11 @@ reconciled, and pending MQTT/events/notifications assessed before application
 cutover. Do not replay external collection dispatches without checking for
 duplicate requests. External media needs its own backup policy.
 
-## Recovery objectives and acceptance
+## Recovery targets
 
-Proposed initial targets are an **RPO of six hours** and an **RTO of sixty
-minutes**. These are operating targets, not measured guarantees. They require a
-successful backup and offsite publication within each six-hour window. Schedule
-more frequently than six hours to allow for execution time and retries.
+The proposed targets are an **RPO of six hours** and an **RTO of sixty minutes**.
+Measure both before production acceptance. Complete a backup and its offsite
+upload within every six-hour window, allowing time for execution and retries.
 
 RPO is measured from the incident to the snapshot time of the selected usable
 backup. RTO runs from incident declaration to verified service restoration,
@@ -38,7 +40,7 @@ Measure both during a representative drill; revise cadence or architecture if
 the measured results miss either target. Logical backups provide no point-in-time
 recovery between snapshots.
 
-## Preconditions
+## Before you start
 
 1. Verify Feature 1 is deployed and locate the actual database container:
    `docker compose ps`. The pending scaffold uses `dwms-postgis`; other deployments
@@ -60,20 +62,19 @@ recovery between snapshots.
 
 ## Create and verify a backup
 
-Run commands from the repository root. Use a fresh timestamp/UUID on every run.
-The paths and object IDs below are examples; substitute your approved locations.
+Run these commands from the project root. Use a new timestamp or UUID for every
+backup and replace the example paths with your backup directory.
 
 ```bash
 python infrastructure/backup/backup.py backup --container dwms-postgis --user dwms --database dwms --output /secure/backups/dwms-20261125T120000Z.dump
 python infrastructure/backup/backup.py verify --archive /secure/backups/dwms-20261125T120000Z.dump
 ```
 
-Both the `.dump` and `.dump.sha256` files are required. Dump creation also checks
-the PostgreSQL archive listing. A successful checksum confirms byte integrity;
-it does not demonstrate database recoverability or source authenticity. Only
-restore archives from trusted administrators and storage.
+Keep the `.dump` and `.dump.sha256` files together. Backup creation checks the
+archive listing; verification checks its checksum. A restore test is still needed
+to confirm recovery. Use archives from trusted administrators and storage.
 
-## Publish and retrieve the offsite copy
+## Upload and retrieve the offsite copy
 
 ```bash
 python infrastructure/backup/backup.py upload --archive /secure/backups/dwms-20261125T120000Z.dump --s3-uri s3://YOUR-BUCKET/dwms/UNIQUE-ID.dump --kms-key-id YOUR-KMS-KEY-ARN
@@ -135,8 +136,8 @@ docker exec RECOVERY-CONTAINER psql -X -U dwms -d dwms_restore_incident_20261125
 
 Verify actual application table counts, selected report coordinates/SRIDs, spatial
 indexes, request states, audit records and sequence values against the backup
-record and known samples. The automated drill uses synthetic representative tables;
-it cannot prove every future application migration is recoverable.
+record and known samples. The automated drill uses sample tables. Repeat the
+checks against the actual application schema when migrations change.
 
 Restore required grants separately: recovery deliberately does not reinstate
 original owners or ACLs. Verify tenant isolation and service access with the real
@@ -149,7 +150,7 @@ Record the exact cutover time. Preserve the previous instance for investigation.
 Rollback to the old instance requires an explicit data reconciliation decision;
 new writes after cutover must not be silently discarded.
 
-## Verification and drill evidence
+## Tests and recovery drills
 
 ```bash
 python -m unittest discover -s infrastructure/backup -p 'test_*.py' -v
@@ -164,8 +165,8 @@ Run a recovery drill before production acceptance and at least monthly thereafte
 Record commit/image versions, backup snapshot time, offsite completion time,
 archive hash, S3 versions, database size, restore duration, validation results,
 measured RPO/RTO, owner and follow-up actions. Do not attach citizen data or
-credentials to a public PR. Cloud access and production-scale timing are pending
-until exercised in an authorized environment.
+credentials to a public PR. Cloud access and production recovery times still need
+testing in the deployment environment.
 
 ## Troubleshooting
 

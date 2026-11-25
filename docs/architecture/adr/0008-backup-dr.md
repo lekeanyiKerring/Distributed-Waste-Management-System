@@ -1,4 +1,4 @@
-# ADR-0008: Verified logical backups and isolated database recovery
+# ADR-0008: Database backups and recovery
 
 - Status: Proposed; maintainer acceptance and production provisioning pending
 - Feature: 8 — Backup & DR
@@ -8,11 +8,22 @@
 ## Context
 
 DWMS stores spatial reports and collection requests in separate schemas of a
-PostgreSQL/PostGIS database. The platform needs a reproducible recovery procedure
-that works before Kubernetes and a specific cloud deployment are available.
+PostgreSQL/PostGIS database. The team needs a recovery procedure that can run
+before Kubernetes or a cloud deployment is available.
 The catalogue classifies Feature 8 as CI+MS, with no dedicated runtime container.
 
 ## Decision
+
+```mermaid
+flowchart LR
+    DB[PostgreSQL/PostGIS] --> DUMP[pg_dump custom archive]
+    DUMP --> HASH[Archive and SHA-256 sidecar]
+    HASH --> S3[Private S3 storage with SSE-KMS]
+    S3 --> CHECK[Download and integrity checks]
+    CHECK --> RECOVERY[New recovery database]
+    RECOVERY --> VALIDATE[Data and application checks]
+    VALIDATE --> CUTOVER[Operator-approved cutover]
+```
 
 Use the database container's matching PostgreSQL clients to create a compressed
 custom-format full-database archive. Implement orchestration with Python 3.11's
@@ -46,11 +57,13 @@ measured logical-backup recovery cannot meet approved targets.
 
 ## Consequences
 
-The tool can be tested independently of application service code, with no new
-runtime container. Real recovery remains dependent on trusted archives, compatible
-extensions, sufficient storage, external media recovery and operator cutover.
+The tests run without the application services. Recovery requires a trusted
+archive, compatible extensions, enough storage and an operator to validate the
+database and switch application connections. External media needs its own recovery
+procedure.
 SHA-256 detects corruption, not malicious replacement. S3 IAM/KMS behavior must
-be verified in an authorized cloud environment; local mocks are not cloud evidence.
+be verified in an authorized cloud environment; the local tests do not exercise
+the cloud account.
 
 Proposed RPO/RTO are six hours/sixty minutes, pending representative measurements.
 Global roles, tablespaces, Redis/MQTT state and external media are excluded. Logical
@@ -61,3 +74,7 @@ snapshots do not support recovery to arbitrary intermediate timestamps.
 Accept after unit checks, a real PostGIS recovery drill, successful offsite
 upload/download with approved policies, measured recovery timing and maintainer
 review. Follow the [recovery runbook](../../runbooks/backup-dr.md).
+
+The [tutorial](../../guides/backup-dr-tutorial.md) demonstrates recovery with sample
+data. The [requirement review](../../assessment/feature8-requirements.md) links each
+role's deliverables and records the remaining acceptance work.
