@@ -10,9 +10,9 @@ provide numeric grading weights.
 |---|---|---|
 | Group | 1 — Platform | Backup & DR only; no unrelated application features. |
 | Feature | 8 | PostgreSQL/PostGIS backup and recovery. |
-| IMP branch | `feat/chore/backup-dr` | [PR #1](https://github.com/lekeanyiKerring/Distributed-Waste-Management-System/pull/1). |
-| TEST branch | `test/chore/dr-restore` | [PR #2](https://github.com/lekeanyiKerring/Distributed-Waste-Management-System/pull/2). |
-| DOC branch | `docs/chore/dr-runbook` | [PR #3](https://github.com/lekeanyiKerring/Distributed-Waste-Management-System/pull/3). |
+| IMP branch | `feat/chore/backup-dr` | [Upstream PR #47](https://github.com/sas-bergson/Distributed-Waste-Management-System/pull/47). |
+| TEST branch | `test/chore/dr-restore` | [Upstream PR #48](https://github.com/sas-bergson/Distributed-Waste-Management-System/pull/48). |
+| DOC branch | `docs/chore/dr-runbook` | [Upstream PR #49](https://github.com/sas-bergson/Distributed-Waste-Management-System/pull/49). |
 | Container/deployment | CI+MS; N/A runtime deployment | CI recovery checks and AWS S3 transfer commands; no additional application container. |
 | Dependency | Feature 1 | Integration remains pending; the CLI accepts the actual database container name. |
 | Week | W1 | Teaching-week eligibility needs confirmation from the course. |
@@ -42,7 +42,7 @@ documentation test reproducible; update it when the reviewed implementation chan
 | Catalogue rule | Record or remaining issue |
 |---|---|
 | One branch and PR per role | Three prescribed branches and three separate PRs. |
-| WIP title and `wip` label | All three PRs are draft, use the prescribed WIP title and carry the label. |
+| WIP title and `wip` label | All upstream PRs are draft with the prescribed WIP title. The author cannot apply upstream labels; `wip` is requested from maintainers. Fork review PRs already carry the label. |
 | Discussion claim for each role | [IMP #4](https://github.com/lekeanyiKerring/Distributed-Waste-Management-System/discussions/4), [TEST #5](https://github.com/lekeanyiKerring/Distributed-Waste-Management-System/discussions/5), [DOC #6](https://github.com/lekeanyiKerring/Distributed-Waste-Management-System/discussions/6). |
 | Claim before branch creation | Claims were posted after publication because repository/CLI authorization was completed later. The timestamps must not be represented as a different sequence. |
 | First TEST artifact | The test file precedes the workflow and README in branch history. Missing implementation causes an explicit failure. |
@@ -50,7 +50,7 @@ documentation test reproducible; update it when the reviewed implementation chan
 | First IMP artifact | Infrastructure commands and usage were committed. The required first OpenAPI artifact is not applicable to a CLI; the lecturer must accept this interpretation. |
 | 48-hour first deliverable | Commit and Discussion timestamps are available; no earlier claim time is asserted. |
 | Ready set and merged dependencies | The referenced ready-set file is absent from the baseline. Feature 1 is unmerged. Maintainer/course confirmation is required. |
-| Merge target | The owner requested fork-local `main` PRs. The catalogue specifies upstream `main`; lecturer acceptance or a later upstream submission is still needed. |
+| Merge target | Upstream `main`: PRs #47, #48 and #49. The earlier fork-local PRs remain review records. |
 | Reviewer and definition of done | WIP PRs await independent review. No approval or merge is claimed. |
 
 ## Remaining acceptance work
@@ -61,8 +61,8 @@ documentation test reproducible; update it when the reviewed implementation chan
 3. Configure and test the deployed schedule, failed-job alerts and retention.
 4. Run the drill with representative data, service roles and application traffic.
    Record measured RPO/RTO, reconciliation and cutover results.
-5. Confirm the lecturer accepts the fork-local submission and the CLI-contract
-   interpretation, then obtain the required reviewer approval.
+5. Confirm the CLI-contract interpretation, obtain the required reviewer approval
+   and have maintainers apply the requested upstream `wip` labels.
 
 These gaps cannot be closed by wording changes or invented test results. The
 completed checks support the implemented scope; production acceptance remains
