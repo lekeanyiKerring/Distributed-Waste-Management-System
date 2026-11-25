@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Feature | 8 â€” Backup & DR |
+| Feature | 8 — Backup & DR |
 | Owner | Platform; submission by `lekeanyiKerring` |
-| Role | DOC â€” `docs/chore/dr-runbook` |
+| Role | DOC — `docs/chore/dr-runbook` |
 | Status | Proposed operating procedure; production rollout pending |
 | Dependency | Feature 1 Compose orchestration and Feature 8 IMP |
 | Decision | [ADR-0008](../architecture/adr/0008-backup-dr.md) |

@@ -1,9 +1,9 @@
 # ADR-0008: Verified logical backups and isolated database recovery
 
 - Status: Proposed; maintainer acceptance and production provisioning pending
-- Feature: 8 â€” Backup & DR
+- Feature: 8 — Backup & DR
 - Objective: `chore`
-- Related dependency: Feature 1 â€” Compose orchestration
+- Related dependency: Feature 1 — Compose orchestration
 
 ## Context
 
