@@ -18,12 +18,12 @@ index, both application schemas, restored sequence state, source preservation,
 existing-target refusal, corrupt-archive refusal before database creation,
 application-database refusal, missing-source failure and backup overwrite refusal.
 
-The TEST branch is independent of the IMP branch. Until IMP is merged, its CI
-resolves the fork's prescribed IMP branch, records its SHA in the run log, and
-checks out that exact commit as a temporary dependency. Once implementation
-exists on the tested branch, CI uses that local
-implementation instead. Both paths run the same tests; no tests silently pass
-because implementation is absent.
+The TEST branch contains only test files. Feature 8 CI workflows are maintained
+in the IMP branch, including `backup-dr-tests.yml`. The workflow uses the tests
+and implementation from its checkout when available. Before integration, it
+resolves missing TEST/IMP branches to exact commits and records both SHAs in its
+run log. Missing dependencies fail explicitly. Review the IMP PR checks for the
+combined recovery test results.
 
 Real S3/KMS behavior, production database size, concurrent application traffic,
 recovery time objectives and operator cutover remain separate acceptance checks.
