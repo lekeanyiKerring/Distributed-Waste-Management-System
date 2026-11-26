@@ -25,27 +25,29 @@ provide numeric grading weights.
 | IMP: API contract | [CLI reference](../api/backup-cli.md) | All commands, arguments, defaults, effects and exit codes documented. No HTTP API was added; OpenAPI is not applicable. |
 | IMP: unit tests | `infrastructure/backup/test_backup.py`; PR #1 checks | 15 tests passed. |
 | TEST: integration and edge cases | `tests/backup/test_dr_restore.py`; PR #2 checks | Six real PostGIS tests passed. Recovery, corruption and preservation checks are covered. |
-| DOC: tutorial | [Recovery exercise](../guides/backup-dr-tutorial.md) | Includes requirements, complete commands, sample data, expected results, failure checks and cleanup. PR #3's tutorial job runs the actual Bash blocks. |
+| DOC: tutorial | [Recovery exercise](../guides/backup-dr-tutorial.md) | Includes requirements, complete commands, sample data, expected results, failure checks and cleanup. The IMP-owned documentation workflow runs the actual Bash blocks. |
 | DOC: operating procedure | [Runbook](../runbooks/backup-dr.md) | Includes backup, offsite transfer, restore, validation, reconciliation, cutover, targets, retention and troubleshooting. |
 | DOC: architecture decision | [ADR-0008](../architecture/adr/0008-backup-dr.md) | Explains the choice, alternatives, trade-offs and acceptance conditions. |
 | DOC: docstrings | CLI module, exception and helper docstrings | Present. Comments explain safety decisions rather than repeating every statement. |
 | DOC: repeatable evidence | [Drill record](../runbooks/backup-drill-record.md) | Blank form separates measured results from untested targets. |
 
-The documentation workflow checks the six Feature 8 Markdown documents and runs
-the tutorial against IMP commit `75a8223ea9eb50ec0d0a55104d9e3a24b9e3e435`.
-Review the [latest PR #3 checks](https://github.com/lekeanyiKerring/Distributed-Waste-Management-System/pull/3/checks)
-for its result and downloadable tutorial output. This pinned version keeps the
-documentation test reproducible; update it when the reviewed implementation changes.
+All Feature 8 workflows belong to the IMP branch. The documentation workflow
+checks these six pages and runs the tutorial. Before integration, it resolves
+missing DOC/IMP branches to exact commits and records their SHAs in the run log;
+after integration, it uses files in the checkout. Review the
+[IMP branch checks](https://github.com/lekeanyiKerring/Distributed-Waste-Management-System/pull/1/checks)
+for results and the downloadable tutorial output.
 
 ## Submission process
 
 | Catalogue rule | Record or remaining issue |
 |---|---|
 | One branch and PR per role | Three prescribed branches and three separate PRs. |
-| WIP title and `wip` label | All upstream PRs are draft with the prescribed WIP title. The author cannot apply upstream labels; `wip` is requested from maintainers. Fork review PRs already carry the label. |
+| Role boundaries | DOC changes only `docs/`; TEST changes only `tests/`; all `.github/workflows/` changes belong to IMP. |
+| WIP title and `wip` label | The submissions started as draft/WIP and were later marked ready for review at the author's request. The author cannot apply upstream labels. Fork review records carry the initial `wip` label. |
 | Discussion claim for each role | [IMP #4](https://github.com/lekeanyiKerring/Distributed-Waste-Management-System/discussions/4), [TEST #5](https://github.com/lekeanyiKerring/Distributed-Waste-Management-System/discussions/5), [DOC #6](https://github.com/lekeanyiKerring/Distributed-Waste-Management-System/discussions/6). |
 | Claim before branch creation | Claims were posted after publication because repository/CLI authorization was completed later. The timestamps must not be represented as a different sequence. |
-| First TEST artifact | The test file precedes the workflow and README in branch history. Missing implementation causes an explicit failure. |
+| First TEST artifact | The test file precedes the README in branch history. The workflow has been moved to IMP. Missing implementation causes an explicit failure. |
 | First DOC artifact | The outline commit precedes the completed runbook. |
 | First IMP artifact | Infrastructure commands and usage were committed. The required first OpenAPI artifact is not applicable to a CLI; the lecturer must accept this interpretation. |
 | 48-hour first deliverable | Commit and Discussion timestamps are available; no earlier claim time is asserted. |
